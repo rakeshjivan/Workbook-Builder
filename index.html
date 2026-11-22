@@ -101,7 +101,6 @@ label.f{display:block;font-size:12px;color:var(--muted);margin:10px 0 3px}
       <div class="row">
         <button class="btn primary" id="pick">Choose Word file</button>
         <input type="file" id="file" accept=".docx,.txt,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
-        <button class="btn ghost" id="sample">Load the Business Venture example</button>
       </div>
       <div class="drop" id="drop">or drop a .docx here</div>
       <div class="status" id="status" role="status"></div>
@@ -113,7 +112,7 @@ label.f{display:block;font-size:12px;color:var(--muted);margin:10px 0 3px}
     <div class="panel">
       <h2>2. Settings</h2>
       <label class="f" for="footer">Footer text</label>
-      <input type="text" id="footer" placeholder="e.g. Business Venture – Part A">
+      <input type="text" id="footer" placeholder="e.g. Year 9 Science – Unit 2">
       <label class="f" for="font">Word font</label>
       <select id="font">
         <option value="Futura Lt BT">Futura Lt BT (matches the school assignment)</option>
@@ -504,56 +503,7 @@ const drop=$("#drop");
 ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over")}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over")}));
 drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];if(f)loadFile(f)});
-const SAMPLE=`# Part A: Research and Business Proposal
-# Step 1: Investigate Moreton Bay
-Caboolture is the chosen location within the Moreton Bay region.
-Research the location and identify:
-- population characteristics
-- existing attractions
-- tourism opportunities
-- transport access
-- community needs
-- possible customer groups
-# Step 2: Design Your Attraction
-Develop an original attraction that could operate successfully within your chosen location.
-You must:
-- create a business name
-- describe the attraction
-- identify key features
-- explain who would visit your attraction – consider your primary target market
-# Step 3: Business Proposal
-Your proposal must include the following sections:
-# 1. Attraction Overview
-Explain:
-- the name of your attraction
-- where it will be located
-- what it offers customers
-- why it would attract visitors
-# 2. Location and Market Analysis
-Explain:
-- why you selected the location
-- characteristics of the local area
-- the opportunity or need your attraction addresses
-- evidence from your research
-# 3. Competitive Advantage
-Identify at least two competitors.
-Explain:
-- what competitors currently offer
-- your attraction's point of difference
-- why customers would choose your attraction
-- how your attraction will maintain its advantage
-Examples of competitive advantage may include: (Could leave this out, they can work it out ?)
-- unique experiences
-- customer service
-- technology
-- innovation
-- sustainability initiatives
-- convenience
-- cost advantages
-- exclusive features
-# 4. Recommendation
-Provide a recommendation explaining why the attraction should proceed and why it is likely to succeed.`;
-$("#sample").onclick=()=>{$("#src").value=SAMPLE;$("#footer").dataset.touched="";render();store();setStatus(`Loaded the example: ${pages.length} pages.`)};
+
 let t;$("#src").addEventListener("input",()=>{clearTimeout(t);t=setTimeout(()=>{render();store()},250)});
 $("#footer").addEventListener("input",()=>{$("#footer").dataset.touched="1";clearTimeout(t);t=setTimeout(()=>{render();store()},250)});
 ["#stripNotes","#optional","#font"].forEach(id=>$(id).addEventListener("change",()=>{render();store()}));
