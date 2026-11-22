@@ -140,7 +140,7 @@ const PENCIL_SRC="data:image/png;base64,"+PENCIL_B64;
 
 /* ---------- page geometry, in twips (1/1440 inch), A4 ---------- */
 const PW=11907, PH=16840, M=1021, TW=PW-2*M, BODY=PH-2*M;
-const LAB=2300, PENW=1000, TITLE_H=950, BAR_H=820, GAP=200, HDR_H=420, SAFE=750;
+const LAB=2300, PENW=1000, TITLE_H=1000, BAR_H=820, GAP=200, HDR_H=420, SAFE=1400;
 const MIN_ROW=1500, SHORT_ROW=900, GRID_ROW=1900;
 
 /* ---------- reading a .docx into outline text ---------- */
@@ -270,7 +270,7 @@ function digest(u){
 function pencilH(paras){
   if(!paras.length) return 0;
   const lines=paras.reduce((n,p)=>n+Math.max(1,Math.ceil(p.length/78)),0);
-  return Math.max(900,lines*300+(paras.length-1)*90+180);
+  return Math.max(1050,lines*330+(paras.length-1)*100+240);
 }
 function gridH(g){return g?BAR_H+HDR_H+g.rows.length*GRID_ROW+GAP:0}
 const isShort=r=>/\bname\b/i.test(r.label)&&r.label.length<45&&!r.sub;
@@ -381,23 +381,26 @@ function docXml(){
   picId=1;let b="";
   pages.forEach((p,pi)=>{
     b+=P(R(p.title,{b:true,sz:48}),{pb:pi>0,keep:true,border:true,after:200,rp:{b:true,sz:48}});
-    for(const k of p.blocks){
+    p.blocks.forEach((k,ki)=>{
+      const last=ki===p.blocks.length-1;
       if(k.type==="pencil"){
         b+=TBL([PENW,TW-PENW],[TR([TC(PENW,P(pic())),TC(TW-PENW,k.paras.map((x,i)=>P(R(x),{before:i?90:0})).join(""))])],"nil");
-        b+=P("",{line:160});
+        if(!last) b+=P("",{line:160});
       } else if(k.type==="grid"){
         const g=k.grid,n=g.cols.length,cw=Math.floor((TW-LAB)/n);
         const rows=[TR([TC(LAB+cw*n,P(R(k.bar.toUpperCase(),{b:true,sz:34})),{span:n+1,fill:"BFBFBF"})],BAR_H),
           TR([TC(LAB,"",{fill:"E7E6E6"}),...g.cols.map(c=>TC(cw,P(R(c,{b:true})),{fill:"E7E6E6"}))],HDR_H),
           ...g.rows.map(r=>TR([TC(LAB,labelCell(r)),...g.cols.map(()=>TC(cw,""))],GRID_ROW))];
-        b+=TBL([LAB,...g.cols.map(()=>cw)],rows)+P("",{line:200});
+        b+=TBL([LAB,...g.cols.map(()=>cw)],rows)+(last?"":P("",{line:200}));
       } else if(k.type==="table"){
         const rows=[TR([TC(TW,P(R(k.bar.toUpperCase(),{b:true,sz:34})),{span:2,fill:"BFBFBF"})],BAR_H),
           ...k.rows.map(r=>r.full?TR([TC(TW,"",{span:2})],r.h):TR([TC(LAB,labelCell(r)),TC(TW-LAB,"")],r.h))];
-        b+=TBL([LAB,TW-LAB],rows)+P("",{line:200});
+        b+=TBL([LAB,TW-LAB],rows)+(last?"":P("",{line:200}));
       }
-    }
+    });
   });
+  // Word needs a paragraph after the final table: keep it 1pt high so it can never spill onto a blank page
+  b+=`<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="20" w:lineRule="exact"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>`;
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="${W}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>${b}<w:sectPr><w:footerReference w:type="default" r:id="rIdF"/><w:pgSz w:w="${PW}" w:h="${PH}"/><w:pgMar w:top="${M}" w:right="${M}" w:bottom="${M}" w:left="${M}" w:header="560" w:footer="560" w:gutter="0"/></w:sectPr></w:body></w:document>`;
 }
 function footerXml(){
